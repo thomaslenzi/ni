@@ -1,0 +1,77 @@
+import { Command, Option } from "commander";
+import { writeAIReport } from "../../lib/ai";
+import { runInContainer } from "../../lib/container";
+import { createFileStream } from "../../lib/files";
+
+export function register(cli: Command) {
+  cli
+    .description("run sqli attack (sqlmap)")
+    .version("1.0.0", "-V")
+    .addOption(new Option("--id <id>", "output identifier").default(""))
+    .addOption(new Option("--ai", "generate AI report").default(false))
+    .addOption(
+      new Option("-t, --target <target>", "target url").makeOptionMandatory(),
+    )
+    .addOption(new Option("-d, --data <data>", "POST data payload").default(""))
+    .addOption(
+      new Option("-e, --enum <enumerate>", "enumerate options")
+        .choices([
+          "banner",
+          "passwords",
+          "current-user",
+          "current-db",
+          "is-dba",
+          "schema",
+        ])
+        .default(""),
+    )
+    .addOption(
+      new Option("--dump-database <database>", "dump database").default(""),
+    )
+    .addOption(new Option("--dump-table <table>", "dump table").default(""))
+    .addOption(new Option("--shell", "interactive shell").default(false))
+    .addOption(new Option("--file-read", "read file").default(""))
+    .addOption(new Option("--flags-sqlmap <flags>", "sqlmap flags").default(""))
+    .action(
+      async (opts: {
+        id: string;
+        ai: boolean;
+        target: string;
+        data: string;
+        enum: string;
+        dumpDatabase: string;
+        dumpTable: string;
+        shell: boolean;
+        fileRead: string;
+        flagsSqlmap: string;
+      }) => {
+        // Setup
+        const [, file] = createFileStream(
+          "web",
+          "sqli",
+          opts.id || opts.target,
+        );
+        // Command
+        let cmd = `figlet "ni" && `;
+        // SQLMap
+        cmd += `figlet "sqlmap" && `;
+        cmd += `sqlmap ${opts.flagsSqlmap} --random-agent --batch -f -u ${opts.target}`;
+        if (opts.data) cmd += ` --data="${opts.data}"`;
+        if (opts.enum) cmd += ` --${opts.enum}`;
+        if (opts.dumpDatabase || opts.dumpTable) cmd += ` --dump`;
+        if (opts.dumpDatabase) cmd += ` -D ${opts.dumpDatabase}`;
+        if (opts.dumpTable) cmd += ` -T ${opts.dumpTable}`;
+        if (opts.shell) cmd += ` --os-shell`;
+        if (opts.fileRead) cmd += ` --file-read=${opts.fileRead}`;
+        // Run
+        const data = await runInContainer({
+          cmd: cmd,
+          stdout: process.stdout,
+          fsout: file,
+        });
+        // AI
+        if (opts.ai)
+          await writeAIReport({ data, stdout: process.stdout, fsout: file });
+      },
+    );
+}
