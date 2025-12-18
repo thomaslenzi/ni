@@ -75,7 +75,7 @@ export function register(cli: Command) {
         cmd += `hydra -I -L /data/login.txt -P /data/password.txt ${opts.flagsHydra}`;
         if (opts.port) cmd += ` -s ${opts.port}`;
         cmd += ` ${opts.target} ${opts.service}`;
-        if (opts.option) cmd += ` "${opts.option}"`;
+        if (opts.option) cmd += ` '${opts.option}'`;
         // Run
         const data = await runInContainer({
           cmd,

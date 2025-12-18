@@ -4,11 +4,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext"],
-    "module": "nodenext",
+    "module": "preserve",
     "moduleDetection": "force",
 
     // Bundler mode
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
     "verbatimModuleSyntax": true,
     "noEmit": true,
