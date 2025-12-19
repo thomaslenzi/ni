@@ -12,20 +12,22 @@ import slugify from "slugify";
 export function createFileSync(
   category: string,
   tool: string,
-  key: string,
+  key?: string,
 ): [string, null] {
   // Create directory if it doesn't exist
   fs.mkdirSync(path.join(process.cwd(), "out", category), { recursive: true });
   // Create file
-  const fileName = path.join(
+  const filePath = path.join(
     process.cwd(),
     "out",
     category,
-    `${tool}_${slugify(key)}.txt`,
+    `${tool}_${slugify(key || new Date().toISOString())
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "")}.txt`,
   );
-  fs.writeFileSync(fileName, "", { flag: "w+" });
+  fs.writeFileSync(filePath, "", { flag: "w+" });
   // Return file name and null as placeholder for stream
-  return [fileName, null] as const;
+  return [filePath, null] as const;
 }
 
 /**
@@ -43,13 +45,13 @@ export function createFileStream(
   // Create directory if it doesn't exist
   fs.mkdirSync(path.join(process.cwd(), "out", category), { recursive: true });
   // Create writable stream
-  const fileName = path.join(
+  const filePath = path.join(
     process.cwd(),
     "out",
     category,
     `${tool}_${slugify(key)}.txt`,
   );
-  const file = fs.createWriteStream(fileName, { flags: "w+" });
+  const file = fs.createWriteStream(filePath, { flags: "w+" });
   // Return file name and writable stream
-  return [fileName, file] as const;
+  return [filePath, file] as const;
 }

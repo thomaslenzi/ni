@@ -13,17 +13,13 @@ export function register(cli: Command) {
   cli
     .description("generate tokens")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
-    .addOption(new Option("-l, --lowercase", "use lowercase").default(false))
-    .addOption(new Option("-u, --uppercase", "use uppercase").default(false))
-    .addOption(new Option("-n, --numbers", "use numbers").default(false))
-    .addOption(new Option("-s, --symbols", "use symbols").default(false))
-    .addOption(
-      new Option("-i, --include <include>", "include characters").default(""),
-    )
-    .addOption(
-      new Option("-e, --exclude <exclude>", "exclude characters").default(""),
-    )
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
+    .addOption(new Option("-l, --lowercase", "use lowercase"))
+    .addOption(new Option("-u, --uppercase", "use uppercase"))
+    .addOption(new Option("-n, --numbers", "use numbers"))
+    .addOption(new Option("-s, --symbols", "use symbols"))
+    .addOption(new Option("-i, --include <include>", "include characters"))
+    .addOption(new Option("-e, --exclude <exclude>", "exclude characters"))
     .addOption(
       new Option("-L, --length <length>", "length")
         .default(32)
@@ -34,13 +30,13 @@ export function register(cli: Command) {
     )
     .action(
       (opts: {
-        waw: boolean;
-        lowercase: boolean;
-        uppercase: boolean;
-        numbers: boolean;
-        symbols: boolean;
-        include: string;
-        exclude: string;
+        waw?: boolean;
+        lowercase?: boolean;
+        uppercase?: boolean;
+        numbers?: boolean;
+        symbols?: boolean;
+        include?: string;
+        exclude?: string;
         length: number;
         number: number;
       }) => {
@@ -52,7 +48,7 @@ export function register(cli: Command) {
           !opts.symbols &&
           !opts.include;
         // Allowed characters
-        let allChars = opts.include;
+        let allChars = opts.include || "";
         if (all || opts.uppercase) allChars += uppercaseChars;
         if (all || opts.lowercase) allChars += lowercaseChars;
         if (all || opts.numbers) allChars += numberChars;
@@ -60,7 +56,7 @@ export function register(cli: Command) {
         allChars = allChars
           .split("")
           .filter((c, i, arr) => arr.indexOf(c) === i)
-          .filter((c) => !opts.exclude.includes(c))
+          .filter((c) => !(opts.exclude || "").includes(c))
           .join("");
         // Validate character set
         if (allChars.length === 0)

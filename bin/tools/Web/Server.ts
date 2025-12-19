@@ -20,9 +20,9 @@ export function register(cli: Command) {
       // Create directory
       fs.mkdirSync(path.join(process.cwd(), "in", "web"), { recursive: true });
       // Command
-      let cmd = `figlet "ni" && `;
+      let cmd = `figlet "ni" \n`;
       // Server
-      cmd = `figlet server && `;
+      cmd = `figlet server \n`;
       // Netcat
       if (opts.type === "raw") cmd = `nc -lvnp 8080`;
       // PHP static

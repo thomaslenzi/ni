@@ -1,5 +1,6 @@
 import { Command, Option } from "commander";
 import { writeAIReport } from "../../lib/ai";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileStream } from "../../lib/files";
 
@@ -7,16 +8,13 @@ export function register(cli: Command) {
   cli
     .description("detect web application firewall (wafw00f + whatwaf)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--ai", "generate AI report").default(false))
+    .addOption(new Option("--id <id>", "output file identifier"))
+    .addOption(new Option("--ai", "generate AI report"))
     .addOption(
-      new Option("-t, --target <target>", "target url").makeOptionMandatory(),
+      new Option("-t, --target <target>", "* target url").makeOptionMandatory(),
     )
-    .addOption(
-      new Option("--flags-wafw00f <flags>", "wafw00f flags").default(""),
-    )
-    .addOption(
-      new Option("--flags-whatwaf <flags>", "whatwaf flags").default(""),
-    )
+    .addOption(new Option("--flags-wafw00f <flags>", "wafw00f flags"))
+    .addOption(new Option("--flags-whatwaf <flags>", "whatwaf flags"))
     .action(
       async (opts: {
         id: string;
@@ -28,14 +26,14 @@ export function register(cli: Command) {
         // Setup
         const [, file] = createFileStream("web", "waf", opts.id || opts.target);
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "ni" \n`;
         // wafwoof
-        cmd += `figlet "wafw00f" && `;
-        cmd += `wafw00f -a -v ${opts.flagsWafw00f} ${opts.target} && `;
+        cmd += `figlet "wafw00f" \n`;
+        cmd += `wafw00f -a -v ${opts.flagsWafw00f || ""} "${safe(opts.target)}" \n`;
         // WhatWaf
-        cmd += `figlet "whatwaf" && `;
-        cmd += `cd /opt/apps/whatwaf && `;
-        cmd += `./venv/bin/python3 whatwaf --url ${opts.target} --ra ${opts.flagsWhatwaf}`;
+        cmd += `figlet "whatwaf" \n`;
+        cmd += `cd /opt/apps/whatwaf \n`;
+        cmd += `./venv/bin/python3 whatwaf --url "${safe(opts.target)}" --ra ${opts.flagsWhatwaf || ""}`;
         // Run
         const data = await runInContainer({
           cmd: cmd,

@@ -1,5 +1,6 @@
 import { Command, Option } from "commander";
 import { writeAIReport } from "../../lib/ai";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileStream } from "../../lib/files";
 
@@ -7,18 +8,18 @@ export function register(cli: Command) {
   cli
     .description("run wordpress scan (wpscan)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(new Option("--ai", "generate AI report").default(false))
+    .addOption(new Option("--id <id>", "output file identifier"))
+    .addOption(new Option("--ai", "generate AI report"))
     .addOption(
-      new Option("-t, --target <target>", "target url").makeOptionMandatory(),
+      new Option("-t, --target <target>", "* target url").makeOptionMandatory(),
     )
-    .addOption(new Option("--flags-wpscan <flags>", "wpscan flags").default(""))
+    .addOption(new Option("--flags-wpscan <flags>", "wpscan flags"))
     .action(
       async (opts: {
-        id: string;
-        ai: boolean;
+        id?: string;
+        ai?: boolean;
         target: string;
-        flagsWpscan: string;
+        flagsWpscan?: string;
       }) => {
         // Setup
         const [, file] = createFileStream(
@@ -27,13 +28,13 @@ export function register(cli: Command) {
           opts.id || opts.target,
         );
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "ni" \n`;
         // WPScan
-        cmd += `figlet "wpscan" && `;
-        cmd += `wpscan --random-user-agent --format cli-no-colour ${opts.flagsWpscan}`;
+        cmd += `figlet "wpscan" \n`;
+        cmd += `wpscan --random-user-agent --format cli-no-colour ${opts.flagsWpscan || ""}`;
         if (process.env.WPSCAN_API_TOKEN)
           cmd += ` --api-token ${process.env.WPSCAN_API_TOKEN}`;
-        cmd += ` --url ${opts.target}`;
+        cmd += ` --url "${safe(opts.target)}"`;
         // Run
         const data = await runInContainer({
           cmd: cmd,

@@ -60,7 +60,7 @@ export function register(cli: Command) {
   cli
     .description("hash a string")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
     .addOption(
       new Option("-a, --algorithm <algorithm>", "algorithm").choices(
         supportedAlgorithms,
@@ -76,7 +76,7 @@ export function register(cli: Command) {
       async (
         str: string,
         opts: {
-          waw: boolean;
+          waw?: boolean;
           algorithm?: SupportedAlgorithm;
           encoding: SupportedEncoding;
         },

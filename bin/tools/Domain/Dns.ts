@@ -1,5 +1,6 @@
 import { Command, Option } from "commander";
 import { writeAIReport } from "../../lib/ai";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileStream } from "../../lib/files";
 
@@ -7,31 +8,27 @@ export function register(cli: Command) {
   cli
     .description("find DNS records (whois + dig + finalrecon + dnsenum)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(new Option("--ai", "generate AI report").default(false))
+    .addOption(new Option("--id <id>", "output file identifier"))
+    .addOption(new Option("--ai", "generate AI report"))
     .addOption(
       new Option(
         "-t, --target <target>",
-        "target domain",
+        "* target domain",
       ).makeOptionMandatory(),
     )
-    .addOption(new Option("--flags-whois <flags>", "whois flags").default(""))
-    .addOption(new Option("--flags-dig <flags>", "dig flags").default(""))
-    .addOption(
-      new Option("--flags-finalrecon <flags>", "finalrecon flags").default(""),
-    )
-    .addOption(
-      new Option("--flags-dnsenum <flags>", "dnsenum flags").default(""),
-    )
+    .addOption(new Option("--flags-whois <flags>", "whois flags"))
+    .addOption(new Option("--flags-dig <flags>", "dig flags"))
+    .addOption(new Option("--flags-finalrecon <flags>", "finalrecon flags"))
+    .addOption(new Option("--flags-dnsenum <flags>", "dnsenum flags"))
     .action(
       async (opts: {
-        id: string;
-        ai: boolean;
+        id?: string;
+        ai?: boolean;
         target: string;
-        flagsWhois: string;
-        flagsDig: string;
-        flagsFinalrecon: string;
-        flagsDnsenum: string;
+        flagsWhois?: string;
+        flagsDig?: string;
+        flagsFinalrecon?: string;
+        flagsDnsenum?: string;
       }) => {
         // Setup
         const [, file] = createFileStream(
@@ -40,19 +37,19 @@ export function register(cli: Command) {
           opts.id || opts.target,
         );
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "ni" \n`;
         // Whois
-        cmd += `figlet "whois" && `;
-        cmd += `whois ${opts.flagsWhois} ${opts.target} && `;
+        cmd += `figlet "whois" \n`;
+        cmd += `whois ${opts.flagsWhois || ""} "${safe(opts.target)}" \n`;
         // Dig
-        cmd += `figlet "dig" && `;
-        cmd += `dig ${opts.flagsDig} ${opts.target} ANY && `;
+        cmd += `figlet "dig" \n`;
+        cmd += `dig ${opts.flagsDig || ""} "${safe(opts.target)}" ANY \n`;
         // FinalRecon
-        cmd += `figlet "finalrecon" && `;
-        cmd += `finalrecon -nb --dns --url http://${opts.target} ${opts.flagsFinalrecon} && `;
+        cmd += `figlet "finalrecon" \n`;
+        cmd += `finalrecon ${opts.flagsFinalrecon || ""} -nb --dns --url "http://${safe(opts.target)}" \n`;
         // DNSenum
-        cmd += `figlet "dnsenum" && `;
-        cmd += `dnsenum --noreverse --nocolor ${opts.flagsDnsenum} ${opts.target}`;
+        cmd += `figlet "dnsenum" \n`;
+        cmd += `dnsenum ${opts.flagsDnsenum || ""} --noreverse --nocolor "${safe(opts.target)}"`;
         // Run
         const data = await runInContainer({
           cmd: cmd,

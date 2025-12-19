@@ -8,26 +8,24 @@ export function register(cli: Command) {
   cli
     .description("manipulate bcrypt hashes")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
-    .addOption(
-      new Option("-c, --check", "check string against hash").default(false),
-    )
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
+    .addOption(new Option("-c, --check", "check string against hash"))
     .addOption(
       new Option("-R, --rounds <rounds>", "rounds")
         .default(10)
         .argParser(argPInt),
     )
-    .addOption(new Option("-h, --hash <hash>", "hash").default(""))
+    .addOption(new Option("-H, --hash <hash>", "hash"))
     .addArgument(new Argument("<string>", "string"))
     .action(
       async (
         str: string,
-        opts: { waw: boolean; check: boolean; rounds: number; hash: string },
+        opts: { waw?: boolean; check?: boolean; rounds: number; hash?: string },
       ) => {
         // Check
         if (opts.check) {
           // Check
-          const result = await bcrypt.compare(str, opts.hash);
+          const result = await bcrypt.compare(str, opts.hash || "");
           // Display
           if (opts.waw)
             print.ln(result ? chalk.bgGreen("MATCH") : chalk.bgRed("NO MATCH"));

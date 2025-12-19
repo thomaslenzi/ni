@@ -1,47 +1,57 @@
 import { Command, Option } from "commander";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileSync } from "../../lib/files";
+import { throwError } from "../../lib/utils";
 
 export function register(cli: Command) {
   cli
-    .description("generate usernames (username-anarchy)")
+    .description("generate a usernames list (username-anarchy)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(
-      new Option("-n, --name <names...>", "names").makeOptionMandatory(),
-    )
+    .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(
       new Option(
-        "--flags-username-anarchy <flags>",
-        "username-anarchy flags",
-      ).default(""),
+        "-n, --name <first|first last|first middle last...>",
+        "* name(s)",
+      ).makeOptionMandatory(),
+    )
+    .addOption(
+      new Option("--flags-username-anarchy <flags>", "username-anarchy flags"),
     )
     .action(
       async (opts: {
-        id: string;
+        id?: string;
         name: string[];
-        flagsUsernameAnarchy: string;
+        flagsUsernameAnarchy?: string;
       }) => {
+        // Parse args
+        const names = opts.name.map((name) => {
+          const parts = name.split(/\s+/);
+          if (parts.length > 3)
+            throwError(
+              "error: required option '-n, --name <names...>' has to many words ([first|first last|first middle last])",
+            );
+          return parts;
+        });
         // Setup
-        const [fileName] = createFileSync(
+        const [filePath] = createFileSync(
           "bruteforce",
           "usernames",
-          opts.id || opts.name.join("-"),
+          opts.id || names.flat().join("-"),
         );
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "ni" \n`;
         // Username-Anarchy
-        cmd += `figlet "username-anarchy" && `;
-        opts.name.forEach((name) => {
-          cmd += `echo "${name}" && `;
-          cmd += `/opt/apps/username-anarchy/username-anarchy ${opts.flagsUsernameAnarchy} ${name} >> /data/out.txt && `;
+        cmd += `figlet "username-anarchy" \n`;
+        names.forEach((parts) => {
+          const safeName = parts.map((part) => `"${safe(part)}"`).join(" ");
+          cmd += `/opt/apps/username-anarchy/username-anarchy ${opts.flagsUsernameAnarchy || ""} ${safeName} >> /data/out.txt \n`;
         });
-        cmd += `true`;
         // Run
         await runInContainer({
           cmd: cmd,
           stdout: process.stdout,
-          files: [{ local: fileName, remote: "/data/out.txt" }],
+          files: [{ local: filePath, remote: "/data/out.txt" }],
         });
       },
     );

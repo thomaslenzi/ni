@@ -98,19 +98,21 @@ export function register(cli: Command) {
   cli
     .description("encode a string")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
     .addOption(
       new Option("-f, --format <format>", "format").choices(supportedFormats),
     )
     .addArgument(new Argument("<string>", "string"))
-    .action((str: string, opts: { waw: boolean; format?: SupportedFormat }) => {
-      // Encodinds
-      const encodings = encodeString(str).filter(
-        ([key]) => !opts.format || key === opts.format,
-      );
-      // Display
-      if (opts.waw) print.table(["Format", "Value"], encodings);
-      else if (opts.format) print.ln(encodings.map(([, v]) => v).join("\n"));
-      else print.ln(encodings.map(([a, v]) => `${a}:${v}`).join("\n"));
-    });
+    .action(
+      (str: string, opts: { waw?: boolean; format?: SupportedFormat }) => {
+        // Encodinds
+        const encodings = encodeString(str).filter(
+          ([key]) => !opts.format || key === opts.format,
+        );
+        // Display
+        if (opts.waw) print.table(["Format", "Value"], encodings);
+        else if (opts.format) print.ln(encodings.map(([, v]) => v).join("\n"));
+        else print.ln(encodings.map(([a, v]) => `${a}:${v}`).join("\n"));
+      },
+    );
 }

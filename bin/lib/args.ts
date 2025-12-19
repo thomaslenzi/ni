@@ -23,3 +23,12 @@ export function argPZInt(value: string): number {
     throw new InvalidArgumentError("Should be a positive integer or zero.");
   return v;
 }
+
+/**
+ * Escape double quotes in a string
+ * @param value the string to escape
+ * @returns the escaped string
+ */
+export function safe(value: string): string {
+  return value.replace(/"/g, '\\"');
+}

