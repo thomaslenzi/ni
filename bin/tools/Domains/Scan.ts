@@ -37,7 +37,7 @@ nuclei: https://github.com/projectdiscovery/nuclei`,
         flagsNuclei?: string;
       }) => {
         // Setup
-        const outputId = `domain_scan_${opts.id || opts.target}`;
+        const outputId = `domains_scan_${opts.id || opts.target}`;
         const [, file] = createFileStream(outputId);
         // Command
         let cmd = `figlet "Ni!" \n`;

@@ -40,7 +40,7 @@ ffuf: https://github.com/ffuf/ffuf`,
         flagsFfuf?: string;
       }) => {
         // Setup
-        const outputId = `domain_subdomains_${opts.id || opts.target}`;
+        const outputId = `domains_subdomains_${opts.id || opts.target}`;
         const [filePath] = createFileSync(outputId);
         // Command
         let cmd = `figlet "Ni!" \n`;
