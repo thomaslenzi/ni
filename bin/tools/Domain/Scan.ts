@@ -9,6 +9,13 @@ export function register(cli: Command) {
   cli
     .description("scan domains (httpx + subzy + nuclei)")
     .version("1.0.0", "-V")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+httpx: https://github.com/projectdiscovery/httpx
+subzy: https://github.com/PentestPad/subzy
+nuclei: https://github.com/projectdiscovery/nuclei`,
+    )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
     .addOption(
@@ -30,13 +37,10 @@ export function register(cli: Command) {
         flagsNuclei?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "domain",
-          "scan",
-          opts.id || opts.target,
-        );
+        const outputId = `domain_scan_${opts.id || opts.target}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         const files: { local: string; remote: string }[] = [];
         // Setup files
         if (existsSync(opts.target))
@@ -53,6 +57,7 @@ export function register(cli: Command) {
         cmd += `nuclei ${opts.flagsNuclei || ""} -l /data/targets.txt`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,

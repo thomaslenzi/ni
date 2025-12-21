@@ -7,6 +7,7 @@ import stripAnsi from "strip-ansi";
 
 /**
  * Run command inside docker container
+ * @param outputId the output identifier
  * @param cmd the command to run
  * @param stdout the output stream to write to with ANSI
  * @param fsout the file stream to write to without ANSI
@@ -15,26 +16,28 @@ import stripAnsi from "strip-ansi";
  * @return the command output without ANSI
  */
 export async function runInContainer({
+  outputId,
   cmd,
   stdout = null,
   fsout = null,
   files = [],
   ports = [],
 }: {
+  outputId: string;
   cmd: string;
   stdout?: NodeJS.WriteStream | null;
   fsout?: fs.WriteStream | null;
   files?: { local: string; remote: string }[];
   ports?: { local: number; remote: number }[];
 }): Promise<string> {
-  // Create directory
-  fs.mkdirSync(path.join(process.cwd(), "in", "cmd"), { recursive: true });
+  // Create directory if it doesn't exist
+  fs.mkdirSync(path.join(process.cwd(), "ni", "cmd"), { recursive: true });
   // Create cmd file
   const filePath = path.join(
     process.cwd(),
-    "in",
+    "ni",
     "cmd",
-    slugify(new Date().toISOString()) + ".sh",
+    slugify(outputId, { lower: false, trim: true }) + ".sh",
   );
   fs.writeFileSync(filePath, cmd, { flag: "w+" });
   // Spawn Docker container
@@ -76,8 +79,6 @@ export async function runInContainer({
   process.on("exit", () => term.kill("SIGKILL"));
   process.on("exit", () => term.kill("SIGKILL"));
   await once(term, "close");
-  // Clean cmd file
-  fs.unlinkSync(filePath);
   // Data
   return dataOutput;
 }

@@ -6,8 +6,14 @@ import { createFileStream } from "../../lib/files";
 
 export function register(cli: Command) {
   cli
-    .description("find DNS records (whois + dig + finalrecon + dnsenum)")
+    .description("find DNS records (whois + dig + FinalRecon + dnsenum)")
     .version("1.0.0", "-V")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+FinalRecon: https://github.com/thewhiteh4t/FinalRecon 
+dnsenum: https://github.com/fwaeytens/dnsenum`,
+    )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
     .addOption(
@@ -18,7 +24,7 @@ export function register(cli: Command) {
     )
     .addOption(new Option("--flags-whois <flags>", "whois flags"))
     .addOption(new Option("--flags-dig <flags>", "dig flags"))
-    .addOption(new Option("--flags-finalrecon <flags>", "finalrecon flags"))
+    .addOption(new Option("--flags-finalrecon <flags>", "FinalRecon flags"))
     .addOption(new Option("--flags-dnsenum <flags>", "dnsenum flags"))
     .action(
       async (opts: {
@@ -31,13 +37,10 @@ export function register(cli: Command) {
         flagsDnsenum?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "domain",
-          "dns",
-          opts.id || opts.target,
-        );
+        const outputId = `domain_dns_${opts.id || opts.target}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         // Whois
         cmd += `figlet "whois" \n`;
         cmd += `whois ${opts.flagsWhois || ""} "${safe(opts.target)}" \n`;
@@ -45,13 +48,14 @@ export function register(cli: Command) {
         cmd += `figlet "dig" \n`;
         cmd += `dig ${opts.flagsDig || ""} "${safe(opts.target)}" ANY \n`;
         // FinalRecon
-        cmd += `figlet "finalrecon" \n`;
+        cmd += `figlet "FinalRecon" \n`;
         cmd += `finalrecon ${opts.flagsFinalrecon || ""} -nb --dns --url "http://${safe(opts.target)}" \n`;
         // DNSenum
         cmd += `figlet "dnsenum" \n`;
         cmd += `dnsenum ${opts.flagsDnsenum || ""} --noreverse --nocolor "${safe(opts.target)}"`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,

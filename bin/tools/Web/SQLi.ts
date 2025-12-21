@@ -8,12 +8,24 @@ export function register(cli: Command) {
   cli
     .description("run sqli attack (sqlmap)")
     .version("1.0.0", "-V")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+sqlmap: https://github.com/sqlmapproject/sqlmap`,
+    )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
     .addOption(
-      new Option("-t, --target <target>", "* target url").makeOptionMandatory(),
+      new Option("-u, --url <url>", "* target url").makeOptionMandatory(),
     )
-    .addOption(new Option("-d, --data <data>", "POST data payload"))
+    .addOption(
+      new Option("-X, --request <method>", "HTTP method")
+        .choices(["GET", "POST", "PUT", "DELETE", "PATCH"])
+        .default("GET"),
+    )
+    .addOption(new Option("-H, --header <header...>", "HTTP header(s)"))
+    .addOption(new Option("-d, --data <data>", "HTTP POST data"))
+    .addOption(new Option("--json", "flag data as JSON"))
     .addOption(
       new Option("-e, --enum <enumerate>", "enumerate options").choices([
         "banner",
@@ -33,8 +45,11 @@ export function register(cli: Command) {
       async (opts: {
         id?: string;
         ai?: boolean;
-        target: string;
+        url: string;
+        request: string;
+        header?: string[];
         data?: string;
+        json?: boolean;
         enum?: string;
         dumpDatabase?: string;
         dumpTable?: string;
@@ -43,16 +58,19 @@ export function register(cli: Command) {
         flagsSqlmap?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "web",
-          "sqli",
-          opts.id || opts.target,
-        );
+        const outputId = `web_sqli_${opts.id || opts.url}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         // SQLMap
         cmd += `figlet "sqlmap" \n`;
-        cmd += `sqlmap ${opts.flagsSqlmap || ""} --random-agent --batch -f -u "${safe(opts.target)}"`;
+        cmd += `sqlmap ${opts.flagsSqlmap || ""} --random-agent --batch -f -u "${safe(opts.url)}"`;
+        if (opts.request) cmd += ` --method="${safe(opts.request)}"`;
+        if (opts.json) {
+          opts.header = opts.header || [];
+          opts.header.push("Content-Type: application/json;charset=utf-8");
+        }
+        if (opts.header) cmd += ` --headers "${safe(opts.header.join("\\n"))}"`;
         if (opts.data) cmd += ` --data="${safe(opts.data)}"`;
         if (opts.enum) cmd += ` --${opts.enum}`;
         if (opts.dumpDatabase || opts.dumpTable) cmd += ` --dump`;
@@ -62,6 +80,7 @@ export function register(cli: Command) {
         if (opts.fileRead) cmd += ` --file-read=${opts.fileRead}`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,

@@ -7,6 +7,13 @@ export function register(cli: Command) {
   cli
     .description("find subdomains (crt.sh + subfinder + assetfinder + ffuf)")
     .version("1.0.0", "-V")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+subfinder: https://github.com/projectdiscovery/subfinder
+assetfinder: https://github.com/tomnomnom/assetfinder
+ffuf: https://github.com/ffuf/ffuf`,
+    )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(
       new Option(
@@ -33,13 +40,10 @@ export function register(cli: Command) {
         flagsFfuf?: string;
       }) => {
         // Setup
-        const [filePath] = createFileSync(
-          "domain",
-          "subdomains",
-          opts.id || opts.target,
-        );
+        const outputId = `domain_subdomains_${opts.id || opts.target}`;
+        const [filePath] = createFileSync(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         // Crt
         if (opts.module.includes("crt")) {
           cmd += `figlet "crt.sh" \n`;
@@ -66,6 +70,7 @@ export function register(cli: Command) {
         cmd += `sort -u -o /data/out.txt /data/out.txt`;
         // Run
         await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           files: [{ local: filePath, remote: "/data/out.txt" }],

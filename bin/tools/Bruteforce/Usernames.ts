@@ -7,6 +7,11 @@ import { throwError } from "../../lib/utils";
 export function register(cli: Command) {
   cli
     .description("generate a usernames list (username-anarchy)")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+username-anarchy: https://github.com/urbanadventurer/username-anarchy`,
+    )
     .version("1.0.0", "-V")
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(
@@ -34,13 +39,10 @@ export function register(cli: Command) {
           return parts;
         });
         // Setup
-        const [filePath] = createFileSync(
-          "bruteforce",
-          "usernames",
-          opts.id || names.flat().join("-"),
-        );
+        const outputId = `bruteforce_usernames_${opts.id || names.flat().join("-")}`;
+        const [filePath] = createFileSync(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         // Username-Anarchy
         cmd += `figlet "username-anarchy" \n`;
         names.forEach((parts) => {
@@ -49,6 +51,7 @@ export function register(cli: Command) {
         });
         // Run
         await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           files: [{ local: filePath, remote: "/data/out.txt" }],

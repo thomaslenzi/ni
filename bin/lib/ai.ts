@@ -23,7 +23,7 @@ export async function askAIQuestion({
   });
   // Ask question
   const response = await client.responses.create({
-    model: "gpt-4o",
+    model: "gpt-5-nano-2025-08-07",
     instructions,
     input: data,
   });

@@ -6,8 +6,14 @@ import { createFileStream } from "../../lib/files";
 
 export function register(cli: Command) {
   cli
-    .description("detect web technology stack (finalrecon + whatweb)")
+    .description("detect web technology stack (FinalRecon + WhatWeb)")
     .version("1.0.0", "-V")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+FinalRecon: https://github.com/finalrecon/finalrecon
+WhatWeb: https://github.com/urbanadventurer/WhatWeb`,
+    )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
     .addOption(
@@ -16,38 +22,36 @@ export function register(cli: Command) {
         .default("mixed"),
     )
     .addOption(
-      new Option("-t, --target <target>", "* target url").makeOptionMandatory(),
+      new Option("-u, --url <url>", "* target url").makeOptionMandatory(),
     )
-    .addOption(new Option("--flags-finalrecon <flags>", "finalrecon flags"))
-    .addOption(new Option("--flags-whatweb <flags>", "whatweb flags"))
+    .addOption(new Option("--flags-finalrecon <flags>", "FinalRecon flags"))
+    .addOption(new Option("--flags-whatweb <flags>", "WhatWeb flags"))
     .action(
       async (opts: {
         id?: string;
         ai?: boolean;
-        target: string;
+        url: string;
         mode: string;
         flagsFinalrecon?: string;
         flagsWhatweb?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "web",
-          "stack",
-          opts.id || opts.target,
-        );
+        const outputId = `web_stack_${opts.id || opts.url}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         // Finalrecon
-        cmd += `figlet "finalrecon" \n`;
-        cmd += `finalrecon --headers --sslinfo --url "${safe(opts.target)}" ${opts.flagsFinalrecon || ""} \n`;
+        cmd += `figlet "FinalRecon" \n`;
+        cmd += `finalrecon --headers --sslinfo --url "${safe(opts.url)}" ${opts.flagsFinalrecon || ""} \n`;
         // Whatweb
-        cmd += `figlet "whatweb" \n`;
+        cmd += `figlet "WhatWeb" \n`;
         cmd += `whatweb -v --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36' ${opts.flagsWhatweb || ""}`;
         if (opts.mode)
           cmd += ` --aggression ${opts.mode === "passive" ? "1" : opts.mode === "aggressive" ? "4" : "3"}`;
-        cmd += ` "${safe(opts.target)}"`;
+        cmd += ` "${safe(opts.url)}"`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,

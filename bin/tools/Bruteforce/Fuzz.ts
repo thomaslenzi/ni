@@ -8,13 +8,22 @@ import { createFileStream } from "../../lib/files";
 export function register(cli: Command) {
   cli
     .description("run fuzzing bruteforce (ffuf)")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+ffuf: https://github.com/ffuf/ffuf`,
+    )
     .version("1.0.0", "-V")
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
     .addOption(
-      new Option("-t, --target <target>", "* target url").makeOptionMandatory(),
+      new Option("-u, --url <url>", "* target url").makeOptionMandatory(),
     )
-    .addOption(new Option("-X, --request <method>", "HTTP method"))
+    .addOption(
+      new Option("-X, --request <method>", "HTTP method")
+        .choices(["GET", "POST", "PUT", "DELETE", "PATCH"])
+        .default("GET"),
+    )
     .addOption(new Option("-H, --header <header...>", "HTTP header(s)"))
     .addOption(new Option("-d, --data <data>", "HTTP POST data"))
     .addOption(new Option("--json", "flag data as JSON"))
@@ -39,8 +48,8 @@ export function register(cli: Command) {
       async (opts: {
         id?: string;
         ai?: boolean;
-        target: string;
-        request?: string;
+        url: string;
+        request: string;
         header?: string[];
         data?: string;
         json?: boolean;
@@ -58,28 +67,25 @@ export function register(cli: Command) {
         flagsFfuf?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "bruteforce",
-          "fuzz",
-          opts.id || opts.target,
-        );
+        const outputId = `bruteforce_fuzz_${opts.id || opts.url}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" \n`;
+        let cmd = `figlet "Ni!" \n`;
         const files: { local: string; remote: string }[] = [];
         // Ffuf command
         cmd += `figlet "ffuf" \n`;
-        cmd += `ffuf ${opts.flagsFfuf || ""} -r -u "${safe(opts.target)}"`;
-        if (opts.request) cmd += ` -X "${safe(opts.request)}"`;
-        if (opts.header)
-          opts.header.forEach((header) => (cmd += ` -H "${safe(header)}"`));
+        cmd += `ffuf ${opts.flagsFfuf || ""} -r -u "${safe(opts.url)}" -X "${safe(opts.request)}"`;
+        opts.header?.forEach((header) => (cmd += ` -H "${safe(header)}"`));
         if (opts.data) cmd += ` -d "${safe(opts.data)}"`;
         if (opts.json) cmd += ` -H "Content-Type: application/json"`;
         opts.wordlist.forEach((wl) => {
-          if (wl.indexOf(":") === -1) return;
           const [filepath, id] = wl.split(":");
           if (existsSync(filepath!)) {
-            files.push({ local: filepath!, remote: `/data/${id}.txt` });
-            cmd += ` -w /data/${id}.txt:${id}`;
+            files.push({
+              local: filepath!,
+              remote: `/data/${id || "FUZZ"}.txt`,
+            });
+            cmd += ` -w /data/${id || "FUZZ"}.txt:${id || "FUZZ"}`;
           } else cmd += ` -w "${safe(wl)}"`;
         });
         if (opts.mc) cmd += ` -mc "${safe(opts.mc)}"`;
@@ -94,6 +100,7 @@ export function register(cli: Command) {
         if (opts.fw) cmd += ` -fw "${safe(opts.fw)}"`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd,
           stdout: process.stdout,
           fsout: file,
