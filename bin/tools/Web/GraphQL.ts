@@ -47,7 +47,7 @@ GraphQLmap: https://github.com/swisskyrepo/GraphQLmap`,
         cmd += `./venv/bin/python3 graphql-cop.py -t "${safe(opts.url)}" ${opts.flagsGraphqlCop || ""} \n`;
         // GraphQLmap
         cmd += `figlet "GraphQLmap" \n`;
-        cmd += `cd /opt/apps/GraphQLmap/ \n`;
+        cmd += `cd /opt/apps/graphqlmap/ \n`;
         cmd += `./venv/bin/python3 ./bin/graphqlmap -u "${safe(opts.url)}" ${opts.flagsGraphqlmap || ""}`;
         // Run
         const data = await runInContainer({

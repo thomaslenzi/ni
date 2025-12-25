@@ -58,7 +58,7 @@ XXEinjector: https://github.com/enjoiz/XXEinjector`,
         cmd += `echo "${opts.data || ""}" >> /data/url.txt \n`;
         // XXEinjector
         cmd += `figlet "XXEinjector" \n`;
-        cmd += `cd /opt/apps/XXEinjector/ \n`;
+        cmd += `cd /opt/apps/xxeinjector/ \n`;
         cmd += `ruby XXEinjector.rb ${opts.flagsXeeinjector || ""} --host="${safe(opts.host)}" --file=/data/url.txt --oob=http --phpfilter --xslt`;
         // Run
         const data = await runInContainer({

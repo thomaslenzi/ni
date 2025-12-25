@@ -1,5 +1,7 @@
 import { Command, Option } from "commander";
 import { existsSync } from "fs";
+import fs from "fs";
+import path from "path";
 import { writeAIReport } from "../../lib/ai";
 import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
@@ -39,6 +41,9 @@ nuclei: https://github.com/projectdiscovery/nuclei`,
         // Setup
         const outputId = `domains_scan_${opts.id || opts.target}`;
         const [, file] = createFileStream(outputId);
+        fs.mkdirSync(path.join(process.cwd(), "ni", "screenshots"), {
+          recursive: true,
+        });
         // Command
         let cmd = `figlet "Ni!" \n`;
         const files: { local: string; remote: string }[] = [];
@@ -48,20 +53,27 @@ nuclei: https://github.com/projectdiscovery/nuclei`,
         else cmd += `echo "${safe(opts.target)}" > /data/targets.txt \n`;
         // httpx
         cmd += `figlet "httpx" \n`;
-        cmd += `cat /data/targets.txt | httpx-toolkit ${opts.flagsHttpx || ""} -status-code -title -server -td -ip -cname \n`;
+        cmd += `cd /data/screenshots \n`;
+        cmd += `/root/go/bin/httpx ${opts.flagsHttpx || ""} -l /data/targets.txt -status-code -title -server -td -ip -cname -ss -system-chrome \n`;
         // subzy
         cmd += `figlet "subzy" \n`;
         cmd += `/root/go/bin/subzy run ${opts.flagsSubzy || ""} --targets /data/targets.txt \n`;
         // nuclei
         cmd += `figlet "nuclei" \n`;
-        cmd += `nuclei ${opts.flagsNuclei || ""} -l /data/targets.txt`;
+        cmd += `/root/go/bin/nuclei ${opts.flagsNuclei || ""} -l /data/targets.txt`;
         // Run
         const data = await runInContainer({
           outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,
-          files,
+          files: [
+            ...files,
+            {
+              local: path.join(process.cwd(), "ni", "screenshots"),
+              remote: "/data/screenshots",
+            },
+          ],
         });
         // AI
         if (opts.ai)

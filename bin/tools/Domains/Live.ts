@@ -35,7 +35,7 @@ httpx: https://github.com/projectdiscovery/httpx`,
         else cmd += `echo "${safe(opts.target)}" > /data/targets.txt \n`;
         // httpx
         cmd += `figlet "httpx" \n`;
-        cmd += `cat /data/targets.txt | httpx-toolkit ${opts.flagsHttpx || ""} -o /data/out.txt\n`;
+        cmd += `/root/go/bin/httpx ${opts.flagsHttpx || ""} -l /data/targets.txt -o /data/out.txt \n`;
         // Run
         await runInContainer({
           outputId,

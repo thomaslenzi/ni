@@ -1,6 +1,7 @@
 import { Command, Option } from "commander";
+import fs from "fs";
+import path from "path";
 import { runInContainer } from "../../lib/container";
-import { createFileSync } from "../../lib/files";
 
 export function register(cli: Command) {
   cli
@@ -10,13 +11,13 @@ export function register(cli: Command) {
     .action(async (opts: { id?: string }) => {
       // Setup
       const outputId = `misc_shell_${opts.id || "session"}`;
-      const [filePath] = createFileSync(outputId);
+      fs.mkdirSync(path.join(process.cwd(), "ni"), { recursive: true });
       // Run
       await runInContainer({
         outputId,
         cmd: "bash",
         stdout: process.stdout,
-        files: [{ local: filePath, remote: "/data/out.txt" }],
+        files: [{ local: path.join(process.cwd(), "ni"), remote: "/data" }],
       });
     });
 }

@@ -64,7 +64,8 @@ sqlmap: https://github.com/sqlmapproject/sqlmap`,
         let cmd = `figlet "Ni!" \n`;
         // SQLMap
         cmd += `figlet "sqlmap" \n`;
-        cmd += `sqlmap ${opts.flagsSqlmap || ""} --random-agent --batch -f -u "${safe(opts.url)}"`;
+        cmd += `cd /opt/apps/sqlmap \n`;
+        cmd += `./venv/bin/python3 sqlmap.py ${opts.flagsSqlmap || ""} --random-agent --batch -f -u "${safe(opts.url)}"`;
         if (opts.request) cmd += ` --method="${safe(opts.request)}"`;
         if (opts.json) {
           opts.header = opts.header || [];

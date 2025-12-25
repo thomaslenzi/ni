@@ -52,17 +52,17 @@ ffuf: https://github.com/ffuf/ffuf`,
         // Subfinder
         if (opts.module.includes("subfinder")) {
           cmd += `figlet "subfinder" \n`;
-          cmd += `subfinder ${opts.flagsSubfinder || ""} -d "${safe(opts.target)}" -all -output /data/out.txt \n`;
+          cmd += `/root/go/bin/subfinder ${opts.flagsSubfinder || ""} -d "${safe(opts.target)}" -all -output /data/out.txt \n`;
         }
         // Assetfinder
         if (opts.module.includes("assetfinder")) {
           cmd += `figlet "assetfinder" \n`;
-          cmd += `assetfinder ${opts.flagsAssetfinder || ""} "${safe(opts.target)}" >> /data/out.txt \n`;
+          cmd += `/root/go/bin/assetfinder ${opts.flagsAssetfinder || ""} "${safe(opts.target)}" >> /data/out.txt \n`;
         }
         // Ffuf
         if (opts.module.includes("ffuf")) {
           cmd += `figlet "ffuf" \n`;
-          cmd += `ffuf ${opts.flagsFfuf || ""} -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u "https://FUZZ.${safe(opts.target)}" -o /data/out.txt \n`;
+          cmd += `/root/go/bin/ffuf ${opts.flagsFfuf || ""} -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u "https://FUZZ.${safe(opts.target)}" -o /data/out.txt \n`;
           cmd += `sed -i "/.${safe(opts.target)}$/ ! s/$/.${safe(opts.target)}/" /data/out.txt \n`;
         }
         // Sort

@@ -61,7 +61,7 @@ Do not provide general information or explanations. Use bullet points for clarit
     input: data,
   });
   // Write
-  const result = `\n\n${figlet.textSync("AI REPORT")}\n\n${response.output_text}`;
+  const result = `\n\n${figlet.textSync("AI report")}\n\n${response.output_text}`;
   stdout?.write(result);
   fsout?.write(result);
 }

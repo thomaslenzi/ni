@@ -39,7 +39,7 @@ XSStrike: https://github.com/s0md3v/XSStrike`,
         let cmd = `figlet "Ni!" \n`;
         // XSStrike
         cmd += `figlet "XSStrike" \n`;
-        cmd += `cd /opt/apps/XSStrike/ \n`;
+        cmd += `cd /opt/apps/xsstrike/ \n`;
         cmd += `./venv/bin/python3 xsstrike.py ${opts.flagsXsstrike || ""} -u "${safe(opts.url)}" --crawl  --blind -t 4 --skip`;
         if (opts.header) cmd += ` --headers "${safe(opts.header.join("\\n"))}"`;
         if (opts.data) cmd += ` --data "${safe(opts.data)}"`;

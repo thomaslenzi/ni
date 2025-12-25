@@ -36,7 +36,8 @@ WhatWaf: https://github.com/Ekultek/WhatWaf`,
         let cmd = `figlet "Ni!" \n`;
         // wafwoof
         cmd += `figlet "wafw00f" \n`;
-        cmd += `wafw00f -a -v ${opts.flagsWafw00f || ""} "${safe(opts.url)}" \n`;
+        cmd += `cd /opt/apps/wafw00f \n`;
+        cmd += `./venv/bin/wafw00f -a -v ${opts.flagsWafw00f || ""} "${safe(opts.url)}" \n`;
         // WhatWaf
         cmd += `figlet "WhatWaf" \n`;
         cmd += `cd /opt/apps/whatwaf \n`;

@@ -42,7 +42,8 @@ WhatWeb: https://github.com/urbanadventurer/WhatWeb`,
         let cmd = `figlet "Ni!" \n`;
         // Finalrecon
         cmd += `figlet "FinalRecon" \n`;
-        cmd += `finalrecon --headers --sslinfo --url "${safe(opts.url)}" ${opts.flagsFinalrecon || ""} \n`;
+        cmd += `cd /opt/apps/finalrecon \n`;
+        cmd += `./venv/bin/python3 finalrecon.py --headers --sslinfo --url "${safe(opts.url)}" ${opts.flagsFinalrecon || ""} \n`;
         // Whatweb
         cmd += `figlet "WhatWeb" \n`;
         cmd += `whatweb -v --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36' ${opts.flagsWhatweb || ""}`;

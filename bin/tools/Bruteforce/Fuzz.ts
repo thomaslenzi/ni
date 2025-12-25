@@ -11,7 +11,7 @@ export function register(cli: Command) {
     .addHelpText(
       "afterAll",
       `\nTools: 
-ffuf: https://github.com/ffuf/ffuf`,
+ffuf: github.com/ffuf/ffuf`,
     )
     .version("1.0.0", "-V")
     .addOption(new Option("--id <id>", "output file identifier"))
@@ -74,7 +74,7 @@ ffuf: https://github.com/ffuf/ffuf`,
         const files: { local: string; remote: string }[] = [];
         // Ffuf command
         cmd += `figlet "ffuf" \n`;
-        cmd += `ffuf ${opts.flagsFfuf || ""} -r -u "${safe(opts.url)}" -X "${safe(opts.request)}"`;
+        cmd += `/root/go/bin/ffuf ${opts.flagsFfuf || ""} -r -u "${safe(opts.url)}" -X "${safe(opts.request)}"`;
         opts.header?.forEach((header) => (cmd += ` -H "${safe(header)}"`));
         if (opts.data) cmd += ` -d "${safe(opts.data)}"`;
         if (opts.json) cmd += ` -H "Content-Type: application/json"`;

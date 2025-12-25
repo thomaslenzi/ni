@@ -17,7 +17,7 @@ export function register(cli: Command) {
     .addHelpText(
       "afterAll",
       `\nTools: 
-hydra: https://github.com/vanhauser-thc/thc-hydra`,
+hydra: github.com/vanhauser-thc/thc-hydra`,
     )
     .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(new Option("--ai", "generate AI report"))
