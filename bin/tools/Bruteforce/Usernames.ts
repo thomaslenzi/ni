@@ -1,47 +1,60 @@
 import { Command, Option } from "commander";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileSync } from "../../lib/files";
+import { throwError } from "../../lib/utils";
 
 export function register(cli: Command) {
   cli
-    .description("generate usernames (username-anarchy)")
-    .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(
-      new Option("-n, --name <names...>", "names").makeOptionMandatory(),
+    .description("generate a usernames list (username-anarchy)")
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+username-anarchy: https://github.com/urbanadventurer/username-anarchy`,
     )
+    .version("1.0.0", "-V")
+    .addOption(new Option("--id <id>", "output file identifier"))
     .addOption(
       new Option(
-        "--flags-username-anarchy <flags>",
-        "username-anarchy flags",
-      ).default(""),
+        "-n, --name <first|first last|first middle last...>",
+        "* name(s)",
+      ).makeOptionMandatory(),
+    )
+    .addOption(
+      new Option("--flags-username-anarchy <flags>", "username-anarchy flags"),
     )
     .action(
       async (opts: {
-        id: string;
+        id?: string;
         name: string[];
-        flagsUsernameAnarchy: string;
+        flagsUsernameAnarchy?: string;
       }) => {
-        // Setup
-        const [fileName] = createFileSync(
-          "bruteforce",
-          "usernames",
-          opts.id || opts.name.join("-"),
-        );
-        // Command
-        let cmd = `figlet "ni" && `;
-        // Username-Anarchy
-        cmd += `figlet "username-anarchy" && `;
-        opts.name.forEach((name) => {
-          cmd += `echo "${name}" && `;
-          cmd += `/opt/apps/username-anarchy/username-anarchy ${opts.flagsUsernameAnarchy} ${name} >> /data/out.txt && `;
+        // Parse args
+        const names = opts.name.map((name) => {
+          const parts = name.split(/\s+/);
+          if (parts.length > 3)
+            throwError(
+              "error: required option '-n, --name <names...>' has to many words ([first|first last|first middle last])",
+            );
+          return parts;
         });
-        cmd += `true`;
+        // Setup
+        const outputId = `bruteforce_usernames_${opts.id || names.flat().join("-")}`;
+        const [filePath] = createFileSync(outputId);
+        // Command
+        let cmd = `figlet "Ni!" \n`;
+        // Username-Anarchy
+        cmd += `figlet "username-anarchy" \n`;
+        names.forEach((parts) => {
+          const safeName = parts.map((part) => `"${safe(part)}"`).join(" ");
+          cmd += `/opt/apps/username-anarchy/username-anarchy ${opts.flagsUsernameAnarchy || ""} ${safeName} >> /data/out.txt \n`;
+        });
         // Run
         await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
-          files: [{ local: fileName, remote: "/data/out.txt" }],
+          files: [{ local: filePath, remote: "/data/out.txt" }],
         });
       },
     );

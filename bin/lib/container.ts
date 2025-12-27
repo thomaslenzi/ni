@@ -1,10 +1,13 @@
 import { spawn } from "child_process";
 import { once } from "events";
 import fs from "fs";
+import path from "path";
+import slugify from "slugify";
 import stripAnsi from "strip-ansi";
 
 /**
  * Run command inside docker container
+ * @param outputId the output identifier
  * @param cmd the command to run
  * @param stdout the output stream to write to with ANSI
  * @param fsout the file stream to write to without ANSI
@@ -13,37 +16,45 @@ import stripAnsi from "strip-ansi";
  * @return the command output without ANSI
  */
 export async function runInContainer({
+  outputId,
   cmd,
   stdout = null,
   fsout = null,
   files = [],
   ports = [],
 }: {
+  outputId: string;
   cmd: string;
   stdout?: NodeJS.WriteStream | null;
   fsout?: fs.WriteStream | null;
   files?: { local: string; remote: string }[];
   ports?: { local: number; remote: number }[];
 }): Promise<string> {
-  // Parse command (must escape double quotes for bash -c)
-  const parsedCmd = cmd.replace(/"/g, '\\"');
+  // Create directory if it doesn't exist
+  fs.mkdirSync(path.join(process.cwd(), "ni", "cmd"), { recursive: true });
+  // Create cmd file
+  const filePath = path.join(
+    process.cwd(),
+    "ni",
+    "cmd",
+    slugify(outputId, { lower: false, trim: true }) + ".sh",
+  );
+  fs.writeFileSync(filePath, cmd, { flag: "w+" });
   // Spawn Docker container
   const term = spawn(
     "docker",
     [
       "run",
+      `--mount type=bind,source=${filePath},target=/data/cmd.sh`,
       ...files.map(
         (f) => `--mount type=bind,source=${f.local},target=${f.remote}`,
       ),
       ...ports.map((p) => `-p ${p.local}:${p.remote}`),
       "--rm",
       "-it",
-      '--entrypoint=""',
       "ni",
       "bash",
-      "-l",
-      "-c",
-      `"${parsedCmd}"`,
+      "/data/cmd.sh",
     ].filter(Boolean),
     {
       shell: true,

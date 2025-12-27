@@ -1,39 +1,43 @@
 import { Command, Option } from "commander";
 import { writeAIReport } from "../../lib/ai";
+import { safe } from "../../lib/args";
 import { runInContainer } from "../../lib/container";
 import { createFileStream } from "../../lib/files";
 
 export function register(cli: Command) {
   cli
-    .description("scrap a web application (scrapy)")
+    .description("scrap a web application (Scrapy)")
     .version("1.0.0", "-V")
-    .addOption(new Option("--id <id>", "output identifier").default(""))
-    .addOption(new Option("--ai", "generate AI report").default(false))
-    .addOption(
-      new Option("-t, --target <target>", "target url").makeOptionMandatory(),
+    .addHelpText(
+      "afterAll",
+      `\nTools: 
+Scrapy: https://github.com/scrapy/scrapy`,
     )
-    .addOption(new Option("--flags-scrapy <flags>", "scrapy flags").default(""))
+    .addOption(new Option("--id <id>", "output file identifier"))
+    .addOption(new Option("--ai", "generate AI report"))
+    .addOption(
+      new Option("-u, --url <url>", "* target url").makeOptionMandatory(),
+    )
+    .addOption(new Option("--flags-scrapy <flags>", "Scrapy flags"))
     .action(
       async (opts: {
-        id: string;
-        ai: boolean;
-        target: string;
-        flagsScrapy: string;
+        id?: string;
+        ai?: boolean;
+        url: string;
+        flagsScrapy?: string;
       }) => {
         // Setup
-        const [, file] = createFileStream(
-          "web",
-          "scrap",
-          opts.id || opts.target,
-        );
+        const outputId = `web_scrap_${opts.id || opts.url}`;
+        const [, file] = createFileStream(outputId);
         // Command
-        let cmd = `figlet "ni" && `;
+        let cmd = `figlet "Ni!" \n`;
         // Scrapy
-        cmd += `figlet "scrapy" && `;
-        cmd += `cd /opt/apps/scrapy && `;
-        cmd += `./venv/bin/python3 ReconSpider.py ${opts.flagsScrapy} ${opts.target}`;
+        cmd += `figlet "Scrapy" \n`;
+        cmd += `cd /opt/apps/scrapy \n`;
+        cmd += `./venv/bin/python3 ReconSpider.py ${opts.flagsScrapy || ""} "${safe(opts.url)}"`;
         // Run
         const data = await runInContainer({
+          outputId,
           cmd: cmd,
           stdout: process.stdout,
           fsout: file,

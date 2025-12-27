@@ -8,21 +8,21 @@ export function register(cli: Command) {
   cli
     .description("manipulate JWT tokens")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
-    .addOption(new Option("-c, --check", "check signature").default(false))
-    .addOption(new Option("-s, --sign", "sign token").default(false))
-    .addOption(new Option("-k, --key <key>", "secret key").default(""))
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
+    .addOption(new Option("-c, --check", "check signature"))
+    .addOption(new Option("-s, --sign", "sign token"))
+    .addOption(new Option("-k, --key <key>", "secret key"))
     .addArgument(new Argument("<string>", "token or data"))
     .action(
       (
         str: string,
-        opts: { waw: boolean; check: boolean; sign: boolean; key: string },
+        opts: { waw?: boolean; check?: boolean; sign?: boolean; key?: string },
       ) => {
         // Check
         if (opts.check) {
           // Verify
           const valid = tryCatchValue<boolean>(
-            () => !!verify(str, opts.key),
+            () => !!verify(str, opts.key || ""),
             false,
           );
           // Display
@@ -34,7 +34,7 @@ export function register(cli: Command) {
           // Sign
           try {
             const d = JSON.parse(str);
-            const token = sign(d.payload, opts.key, {
+            const token = sign(d.payload, opts.key || "", {
               algorithm: d.header.alg || "HS256",
             });
             // Data

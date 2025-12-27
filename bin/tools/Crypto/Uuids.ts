@@ -26,7 +26,7 @@ export function register(cli: Command) {
   cli
     .description("generate UUIDs")
     .version("1.0.0", "-V")
-    .addOption(new Option("-w, --waw", "waw/pretty mode").default(false))
+    .addOption(new Option("-w, --waw", "waw/pretty mode"))
     .addOption(
       new Option("-v, --version <version>", "version")
         .choices(supportedVersions)
@@ -44,7 +44,7 @@ export function register(cli: Command) {
     )
     .action(
       (opts: {
-        waw: boolean;
+        waw?: boolean;
         version: SupportedVersion;
         namespace?: SupportedNamespace;
         name?: string;

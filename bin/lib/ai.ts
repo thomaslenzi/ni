@@ -23,7 +23,7 @@ export async function askAIQuestion({
   });
   // Ask question
   const response = await client.responses.create({
-    model: "gpt-4o",
+    model: "gpt-5-nano-2025-08-07",
     instructions,
     input: data,
   });
@@ -61,7 +61,7 @@ Do not provide general information or explanations. Use bullet points for clarit
     input: data,
   });
   // Write
-  const result = `\n\n${figlet.textSync("AI REPORT")}\n\n${response.output_text}`;
+  const result = `\n\n${figlet.textSync("AI report")}\n\n${response.output_text}`;
   stdout?.write(result);
   fsout?.write(result);
 }

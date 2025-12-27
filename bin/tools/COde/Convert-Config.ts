@@ -14,7 +14,7 @@ export function register(cli: Command) {
     .description("convert configuration file")
     .version("1.0.0", "-V")
     .addOption(
-      new Option("-f, --format <format>", "output format")
+      new Option("-f, --format <format>", "* output format")
         .choices(supportedFormats)
         .makeOptionMandatory(),
     )
