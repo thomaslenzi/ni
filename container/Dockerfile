@@ -5,7 +5,7 @@ RUN mkdir -p /opt/lists /opt/apps /data
 
 # Common packages
 RUN apt update
-RUN apt install -y curl unzip jq git figlet
+RUN apt install -y curl unzip jq git figlet chromium
 RUN apt install -y golang python3 python3-pip python3-venv ruby php
 
 ## Lists
@@ -41,5 +41,3 @@ RUN mkdir /opt/apps/wafw00f && cd /opt/apps/wafw00f/ && python3 -m venv venv && 
 RUN git clone --depth 1 https://github.com/ekultek/whatwaf.git /opt/apps/whatwaf && cd /opt/apps/whatwaf/ && python3 -m venv venv && ./venv/bin/pip3 install -r requirements.txt
 RUN git clone --depth 1 https://github.com/s0md3v/XSStrike.git /opt/apps/xsstrike && cd /opt/apps/xsstrike/ && python3 -m venv venv && ./venv/bin/pip3 install -r requirements.txt
 RUN git clone --depth 1 https://github.com/enjoiz/XXEinjector.git /opt/apps/xxeinjector
-
-RUN apt install -y chromium

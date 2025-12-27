@@ -55,6 +55,8 @@ nuclei: https://github.com/projectdiscovery/nuclei`,
         cmd += `figlet "httpx" \n`;
         cmd += `cd /data/screenshots \n`;
         cmd += `/root/go/bin/httpx ${opts.flagsHttpx || ""} -l /data/targets.txt -status-code -title -server -td -ip -cname -ss -system-chrome \n`;
+        cmd += `mv /data/screenshots/output/screenshot/* /data/screenshots/ \n`;
+        cmd += `rm -rf /data/screenshots/output \n`;
         // subzy
         cmd += `figlet "subzy" \n`;
         cmd += `/root/go/bin/subzy run ${opts.flagsSubzy || ""} --targets /data/targets.txt \n`;
